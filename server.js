@@ -24,7 +24,7 @@ const albumsData = [
     url: "https://www.youtube.com/embed/ViwtNLUqkMY?rel=0&amp;controls=0&amp;showinfo=0",
   },
 ];
-
+app.use(express.json());
 // Getting all albums
 app.get("/albums", function (req, res) {
   res.send(albumsData);
@@ -80,32 +80,56 @@ app.delete("/albums/:albumId", function (req, res) {
 });
 
 // Updating an album
-app.put("/albums/:albumId", function (req, res) {
-  const albumIndex = albumsData.findIndex(
-    (album) => album.albumId === req.params.id
-  );
+// app.put("/albums/:albumId", function (req, res) {
+//   const albumIndex = albumsData.findIndex(
+//     (album) => album.albumId === req.params.id
+//   );
 
-  if (albumIndex >= 0) {
-    const originalAlbum = albumsData[albumIndex];
-    const updatedAlbum = req.body;
+//   if (albumIndex >= 0) {
+//     const originalAlbum = albumsData[albumIndex];
+//     const updatedAlbum = req.body;
 
-    //Validating Data
-    if (
-      originalAlbum.albumId &&
-      updatedAlbum.albumId !== updatedAlbum.albumId
-    ) {
-      res.status(400);
-      res.send({ message: "album IDs do not match" });
-    } else {
-      albumsData[albumIndex] = { ...originalAlbum, ...updatedAlbum };
-      res.send(albumsData[albumIndex]); // sends an object containing  original album array and updated album array
+//     //Validating Data
+//     if (
+//       originalAlbum.albumId &&
+//       updatedAlbum.albumId !== updatedAlbum.albumId
+//     ) {
+//       res.status(400);
+//       res.send({ message: "album IDs do not match" });
+//     } else {
+//       albumsData[albumIndex] = { ...originalAlbum, ...updatedAlbum };
+//       res.send(albumsData[albumIndex]); // sends an object containing  original album array and updated album array
+//     }
+//   } else {
+//     res.status(404);
+//     res.send({ message: "no such album" });
+//   }
+// });
+
+app.put("/albums/:albumId", (req, res) => {
+  console.log("PUT /albums route");
+  let oldAlbum = {};
+  let newAlbum = {};
+
+  albumsData.forEach((album, index) => {
+    if (album.albumId == req.params.albumId) {
+      newAlbum = { ...album, ...req.body };
+      oldAlbum = albumsData[index];
+
+      albumsData[index] = newAlbum;
     }
-  } else {
-    res.status(404);
-    res.send({ message: "no such album" });
-  }
+  });
+
+  res.json({
+    success: true,
+    oldAlbum: oldAlbum,
+    newAlbum: newAlbum,
+  });
 });
 
-const PORT = 5001;
+// const PORT =  5001;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.listen(process.env.PORT, () =>
+  console.log(`Server started on port ${PORT}`)
+);
